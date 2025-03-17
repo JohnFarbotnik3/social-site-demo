@@ -1,0 +1,29 @@
+
+> featureset / pages
+* DONE
+	- login.
+	- sign up.
+	- edit profile.
+	- add posts to my page.
+	- edit posts on my page.
+* TODO:
+	- search + view list of friends.
+	- search for + add friends.
+	- view other user's pages (user info in left column, posts in remaining page area).
+	- send messages to other users.
+	* add one-liner documentation to each table-function in API mock backend.
+...
+
+
+> authorization:
+- public requests (no token required):
+	- GET | user_id -> userpage
+	- GET | user_id -> username, nickname, avatar
+	- GET | search list of usernames by substring
+- private requests (token only allows you to access your own information):
+	- SET | user_id, token -> username, nickname, avatar, password
+- login procedure:
+	- user logs in with usn+pwd.
+	- user receives token (old token is cleared if it exists).
+	- token table: <user_id, token, expiry_date>.
+...

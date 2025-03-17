@@ -1,0 +1,112 @@
+INSTALLING MONGODB
+
+it would appear that the way to get closest to a "portable install" of MongoDB
+without compiling from source would be to use the Docker image,
+so I'll have to install and re-learn Docker first.
+
+https://docs.docker.com/
+https://docs.docker.com/desktop/setup/install/linux/
+https://docs.docker.com/desktop/setup/install/linux/archlinux/
+
+# ============================================================
+INSTALLING MONGODB - ATTEMPT 2
+
+on second though, docker-engine may not work on this machine,
+and finding an install guide for it is rather difficult.
+(I'm not really interested in installing docker-desktop).
+
+sources:
+https://wiki.archlinux.org/title/MongoDB
+https://aur.archlinux.org/packages/mongodb
+https://wiki.archlinux.org/title/Help:Reading#Installation_of_packages
+https://forum.manjaro.org/t/fakeroot-binary-missing/43646/5
+
+# clone to folder.
+git clone https://aur.archlinux.org/mongodb.git
+
+# install base developer stuff (and dependencies) in order to build packages from AUR
+sudo pacman -S --needed base-devel
+
+# build + install package.
+cd "./mongodb"
+makepkg -si
+
+> WARNING: building failed at ~10 hours. (filled up RAM then crashed)
+
+# ============================================================
+INSTALLING MONGODB - ATTEMPT 3
+
+on third though, lets just install the binaries.
+
+sources:
+https://wiki.archlinux.org/title/Help:Reading#Installation_of_packages
+https://forum.manjaro.org/t/fakeroot-binary-missing/43646/5
+https://aur.archlinux.org/packages/mongosh-bin
+https://aur.archlinux.org/packages/mongodb-bin
+
+# install base developer stuff (and dependencies) in order to build packages from AUR
+sudo pacman -S --needed base-devel
+
+# clone and build + install.
+git clone https://aur.archlinux.org/mongosh-bin.git
+git clone https://aur.archlinux.org/mongodb-bin.git
+cd "mongosh-bin" && makepkg -si && cd ..
+cd "mongodb-bin" && makepkg -si && cd ..
+
+
+# ============================================================
+SETUP
+
+sources:
+https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/#std-label-install-mdb-community-ubuntu
+
+additional reading:
+https://www.mongodb.com/docs/manual/administration/production-notes/
+
+note:
+by default, installing from a package manager will create a new user account "mongodb",
+and the following directories are created:
+/var/lib/mongodb
+/var/log/mongodb
+/etc/mongod.conf
+
+# start mongodb service.
+sudo systemctl start mongodb
+
+# if above command fails with error:
+# "Failed to start mongod.service: Unit mongod.service not found."
+# run this first.
+sudo systemctl daemon-reload
+
+# verify service has started.
+sudo systemctl status mongodb
+
+# stop or restart service.
+sudo systemctl stop mongodb
+sudo systemctl restart mongodb
+
+# NOTE: if stuff still doesnt work, see:
+# https://stackoverflow.com/questions/48092353/failed-to-start-mongod-service-unit-mongod-service-not-found
+# its worth noting that I had to use "mongodb" instead of "mongod" for some commands.
+
+# if it crashes on startup, with error "Failed to unlink socket file"
+# in "/var/log/mongodb/mongod.log", see:
+# https://www.mongodb.com/community/forums/t/failed-to-unlink-socket-file-operation-not-permitted/208542/5
+
+# start shell session.
+mongosh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

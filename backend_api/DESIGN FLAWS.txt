@@ -1,0 +1,70 @@
+
+MAJOR FLAW
+	if an API operation requires multiple db sub-operations, and one of them fails midway,
+	the sub-operations before it are still committed, leaving the DB in an inconsistent state.
+FIX
+	learn how to do proper db transactions with mongoDB, wherein transaction is only committed
+	if all sub-operations are successful.
+...
+
+
+MINOR FLAW
+	if a chat accumulates 10^6 or more posts, list fetches will be expensive
+	(since the list will contain 10^6 post_ids) and insert/remove operations will lag.
+FIX
+	if there is > 2*10^3 ids in a list, transfer the oldest 10^3 into a "list-chunk".
+	in theory these will only be accessed when a user goes way back in a chat/post history.
+TRADE-OFF
+	potentially significant increase in complexity, just to address an edge case.
+	most users on a typical social media platform dont reach 10^3 posts/chat-messages.
+...
+
+
+MINOR FLAW
+	chat-messages and user-posts share the same table.
+	meaning the table will be larger.
+FIX
+	chat-messages and user-posts may benefit from being given seperate tables,
+	since they are slighly different features.
+TRADE-OFF
+	an extra table to maintain
+...
+
+
+MAJOR ARCHITECTURE PREFERENCE
+	instead of using MongoDB and having shared tables for all users,
+	SQLite could be used, and each individual user could be given a seperate SQLite file.
+	could make stuff a lot simpler, and a lot faster.
+	also less dependencies and security risks.
+
+	for shared collections of posts, such as a group-chat,
+	each group-chat can get its own file.
+...
+
+
+MAJOR FLAW
+	this app lacks a coherent mechanism for syncing changes/notifications between frontend and backend.
+	(as well as updating UI in a non-spaghetti-code manner.)
+	if a new chat is created, a new message is sent, or new posts are made,
+	other users wont see it without manually triggering fetches and UI updates.
+	(with the exception of the couple places where I directly added notification checking code.)
+FIX
+	have a frontend store/cache for all data relevant to the UI, for example messages, posts, friends-lists, etc.
+	also have timers for polling various notification types (one for each type of change that should be checked for),
+	and then either immediately retrieving updated information,
+	or lazy loading it when showing related UI components.
+TRADE-OFF
+	doing this properly requires a decent amount of upfront architecture planning,
+	and probably some trial-and-error as well.
+...
+
+
+SCALING PROBLEM
+	using polling wouldnt be great with 10^6 active users - but if its possible to juggle 1M websockets,
+	i.e. keep track of sockets programatically and bind them to sockets on the fly to use/maintain connection -
+	then we can send notifications only when something changes (and the user has an active websocket),
+	saving a huge amount of requests we would otherwise need with polling, whilst also greatly improving responsiveness.
+...
+
+
+
