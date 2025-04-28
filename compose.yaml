@@ -1,0 +1,55 @@
+version: '3.1'
+
+services:
+
+  mongo-db-container:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: usr3456
+      MONGO_INITDB_ROOT_PASSWORD: pwd1029380219830129830
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10m
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+      start_interval: 2s
+
+  backend_api:
+    build:
+      context: .
+      dockerfile: ./backend_api_mongodb/dockerfile_api
+    restart: always
+    stop_grace_period: 5s # SIGKILL after 5s
+    init: true
+    volumes:
+      - backend_api_logs:/workdir/logs
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: usr3456
+      ME_CONFIG_MONGODB_ADMINPASSWORD: pwd1029380219830129830
+      ME_CONFIG_MONGODB_URL: mongodb://usr3456:pwd1029380219830129830@mongo-db-container:27017
+      ME_CONFIG_BASICAUTH: false
+      DIR_API_LOGS: /workdir/logs
+    depends_on:
+      mongo-db-container:
+        condition: service_healthy
+        restart: true
+
+  backend_nginx:
+    build:
+      context: .
+      dockerfile: ./backend_api_mongodb/dockerfile_nginx
+    restart: always
+    ports:
+      - 8443:8443
+      - 5443:5443
+    depends_on:
+      - backend_api
+
+
+volumes:
+  backend_api_logs:
+

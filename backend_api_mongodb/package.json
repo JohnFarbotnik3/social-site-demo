@@ -1,0 +1,31 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build_tsc": "tsc --project tsconfig.json",
+    "build": "tsc -noEmit --project tsconfig.json && node ./esbuild.mjs",
+    "build_api"		: " docker rmi -f social-site-demo-backend_api   && npm run build",
+    "build_nginx"	: " docker rmi -f social-site-demo-backend_nginx && cd ../frontend_svelte && npm run build && cd ../backend_api_mongodb",
+    "start": "node ./bundle/index.cjs",
+    "link": "npm link backend_api_types"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-ws": "^5.0.2",
+    "mongodb": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/express-ws": "^3.0.5",
+    "@types/node": "^22.13.9",
+    "esbuild": "0.25.1",
+    "typescript": "^5.8.2"
+  }
+}

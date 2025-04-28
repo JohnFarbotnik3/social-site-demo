@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"target": "ES6",
+		"outDir": "./build",
+		"noImplicitAny": true,
+		"removeComments": true,
+		"preserveConstEnums": true,
+		"sourceMap": true,
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"isolatedModules": true
+	},
+	"files": [
+		"./src/index.ts"
+	]
+}

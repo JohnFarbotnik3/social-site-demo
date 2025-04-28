@@ -1,0 +1,85 @@
+
+> [GENERAL] code improvements:
+- separate chat-posts from blog-posts, and add chat_id to chat-posts.
+	^ update frontend cache to substitute posts (and replace post_id in list) when updating (instead of mutating them).
+- make client-side friends list a map instead of an array.
+- add user_id to Blog type.
+- add toggle under group-chat "Send" button - "send on ENTER".
+- add DB indices.
+- add some component to display notification list.
+- check Origin header when creating wss connections (as well as for fetch requests!).
+- read a UI/UX design guide, and make the app look more clean & consistent.
+? add "demo-token" so that when this application goes public, the DB isnt blasted with nasty content?
+? make DB clear every 24h?
+- allow user to download all of their data (account, blog-posts, chat-posts, etc.)
+^ the downloaded user-archive should be sufficient to restore the vast majority of their content.
+* instead of returning null when table insert operation fails,
+	have a return type with a "success" field and an "error_type" field.
+	this will make it easier to add safety checks to the tables themselves.
+- allow multiple login tokens.
+	^ add "logout on all devices" button to profile page.
+- when user-websocket closes/errors, just silently try to reconnect instead of erroring.
+- sort posts by date-created, and show "(modified: <DATE>)" if it differs from date-created.
+- have table functions return "ResultWithStatus<Value>" instead of just "Value | null",
+	so that logging/error-messages can be more precise, indicating WHY the table operation failed.
+...
+
+> [DEPLOYMENT]
+- make docker images do multi-stage builds - in particular a BUILD stage and a IMAGE stage.
+- figure out how to do npm-link thing when pulling from github repo and doing multi-stage build on the deployment server.
+
+
+> [BUGS]
+- [frontend - chat] chat stays open and gives no indication of error when chat socket closes early (due to server error for example).
+	^ bug found when: Alice opened chat with Bob, Bob deleted account, then Alice sent Bob a message.
+	* user should be alerted of close/error, and chat-component should be closed.
+...
+
+
+> [E2E TESTING]
+- figure out how to spawn swarms of testers with playwright (for testing friend+chat functionality with multiple users).
+- add a flag "test" to the "create user" fetch request so that db can track and clean up test users afterwards.
+^ DEV NOTE: a seperate DB for testing should be used, instead of testing against production DB.
+* reading:
+https://playwright.dev/docs/trace-viewer-intro
+https://playwright.dev/docs/api/class-locator
+https://playwright.dev/docs/locators
+https://playwright.dev/docs/test-assertions
+
+
+
+> [CLIENT] create frontend API-core:
+- update "sync_blogs()" and "sync_chats()" to operate on individual items instead.
+	^ use SYNC for single large mutable items, and GET for multiple small immutable items.
+- put macro functions in API_core.
+* API core should contain entire frontend state, so that running e2e and simulation tests is easier.
+	^ it should have all caches.
+	^ it should have implementation of all fetch requests.
+		^ fetch requests should *not* be used externally, macro functions will be for external use.
+	^ it should fully manage websockets and ws-messages.
+	^ it should have macro-functions for performing multiple requests/actions at once,
+		for example: syncing a Blog and getting all needed Infos + Posts.
+	^ it should have a way for external components to subscribe to various cached content changes and events,
+		for example: on "chat_post_added" (ws-event), "on_sync_blog_completed" (macro-function), etc.
+	? should it be indexedDB based? (check what StackOverflow and Reddit think)
+	? should it have a "loaded" promise for blocking app until IDB is loaded and initial auto-login attempt has completed?
+- write an API-core, which contains all the caches and user-state required for a single client,
+then the frontend can have a wrapper around that which the UI will use.
+* this will allow me to re-use that struct for simulation testing,
+enabling more in-depth and thorough tests (for example, testing "sync" functions).
+* implement frontend-API-core in a folder, not just a single file.
+- add mechanism for awaiting responses to websocket messages,
+for example returning a promise when sending a ws_friend_add message that is
+resolved when the on_message handler receives the corrosponding ws_friend_add_response.
+^ this will likely require some sort of request_id in ws requests so a map of promises can be maintained,
+and the API can figure out which response corrosponds to which request.
+
+
+> [API SIMULATION TEST]
+* move simulation test into "e2e/api_test" folder.
+- implement chat verification test.
+^ this will require keeping participants client-side chat-lists up to date.
+- implement general round trip tests to compare with server performance logs
+to get the approximate request cost relationship w.r.t. size (hypothesis: linear with offset).
+
+
