@@ -91,25 +91,16 @@ export function cache_on_blog_insert_post(blog_id:StringId, post:WithStringId<Bl
 	cache.blogs.set(blog_id, {...blog});
 	cache.blog_posts.set(post._id, post);
 }
-export function cache_on_blog_update_post(blog_id:StringId, old_post_id:StringId, new_post:WithStringId<BlogPost>) {
-	// replace old post with new post.
-	cache.blog_posts.delete(old_post_id);
-	cache.blog_posts.set(new_post._id, new_post);
-	// update blog post-list.
-	const blog = cache.blogs.get(blog_id);
-	if(!blog) throw("no blog");
-	const id_set = new Set(blog.post_ids);
-	id_set.delete(old_post_id);
-	id_set.add(new_post._id);
-	blog.post_ids = [...id_set.keys()];
-	cache.blogs.set(blog_id, {...blog});
-}
 export function cache_on_blog_remove_post(blog_id:StringId, post_id:StringId) {
 	const blog = cache.blogs.get(blog_id);
 	if(!blog) throw("no blog");
 	blog.post_ids = blog.post_ids.filter((id: StringId) => id !== post_id);
 	cache.blogs.set(blog_id, {...blog});
 	cache.blog_posts.delete(post_id);
+}
+export function cache_on_blog_update_post(blog_id:StringId, old_post_id:StringId, new_post:WithStringId<BlogPost>) {
+	cache_on_blog_remove_post(blog_id, old_post_id);
+	cache_on_blog_insert_post(blog_id, new_post);
 }
 
 // helpers: get.
@@ -130,6 +121,9 @@ export function can_add_friend(friend_id: StringId) {
 }
 export function has_new_chats(chat_id: StringId) {
 	return cache.notifs.chat_activity.includes(chat_id);
+}
+export function is_new_friend(friend_id: StringId) {
+	return cache.notifs.friends_added.includes(friend_id);
 }
 export function get_friend_notifs() {
 	const add_ids = cache.notifs.friends_added;

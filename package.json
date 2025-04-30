@@ -1,0 +1,14 @@
+{
+  "name": "social-site-demo",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "John Farbotnik",
+  "scripts": {
+    "build_nginx"	: "docker rmi -f social-site-demo-backend_nginx && cd ./frontend_svelte && npm run build && cd ..",
+	"build_api"		: "docker rmi -f social-site-demo-backend_api   && cd ./backend_api_mongodb && npm run build && cd ..",
+	"logs_mongo"	: "./scripts/export_logs_mongo.sh",
+	"logs_nginx"	: "./scripts/export_logs_nginx.sh",
+	"logs_api"		: "./scripts/export_logs_api.sh"
+  }
+}

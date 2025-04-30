@@ -1,16 +1,10 @@
 
 > [GENERAL] code improvements:
-- separate chat-posts from blog-posts, and add chat_id to chat-posts.
-	^ update frontend cache to substitute posts (and replace post_id in list) when updating (instead of mutating them).
-- make client-side friends list a map instead of an array.
-- add user_id to Blog type.
 - add toggle under group-chat "Send" button - "send on ENTER".
 - add DB indices.
 - add some component to display notification list.
 - check Origin header when creating wss connections (as well as for fetch requests!).
 - read a UI/UX design guide, and make the app look more clean & consistent.
-? add "demo-token" so that when this application goes public, the DB isnt blasted with nasty content?
-? make DB clear every 24h?
 - allow user to download all of their data (account, blog-posts, chat-posts, etc.)
 ^ the downloaded user-archive should be sufficient to restore the vast majority of their content.
 * instead of returning null when table insert operation fails,
@@ -22,6 +16,7 @@
 - sort posts by date-created, and show "(modified: <DATE>)" if it differs from date-created.
 - have table functions return "ResultWithStatus<Value>" instead of just "Value | null",
 	so that logging/error-messages can be more precise, indicating WHY the table operation failed.
+- learn about mongo configs: https://www.mongodb.com/docs/manual/reference/program/mongod/#cmdoption-configsvr
 ...
 
 > [DEPLOYMENT]

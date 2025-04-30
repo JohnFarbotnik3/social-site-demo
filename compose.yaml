@@ -7,6 +7,11 @@ services:
     restart: always
     ports:
       - 27017:27017
+    command: ['--logpath', '/var/log/mongodb/mongod.log']
+    volumes:
+        - mongo_db_volume:/data/db
+        - mongo_db_config:/data/configdb
+        - mongo_logs:/var/log/mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: usr3456
       MONGO_INITDB_ROOT_PASSWORD: pwd1029380219830129830
@@ -41,15 +46,21 @@ services:
   backend_nginx:
     build:
       context: .
-      dockerfile: ./backend_api_mongodb/dockerfile_nginx
+      dockerfile: ./backend_nginx/dockerfile_nginx
     restart: always
     ports:
       - 8443:8443
       - 5443:5443
+    volumes:
+      - backend_nginx:/var/log/nginx
     depends_on:
       - backend_api
 
 
 volumes:
+  mongo_db_volume:
+  mongo_db_config:
+  mongo_logs:
   backend_api_logs:
+  backend_nginx:
 

@@ -47,6 +47,8 @@
 		align-items: center;
 		padding: 2px;
 		height: 30px;
+		outline: 1px solid var(--outline_clr_medium);
+		outline-offset: -1px;
 	}
 	.spacer {
 		flex-grow: 1;
@@ -56,8 +58,7 @@
 		color: #0068c4;
 		font-size: var(--navbar_btn_font_size);
 		padding: var(--navbar_btn_padding);
-		border-radius: 5px;
-		outline: 1px solid #777;
+		outline: 1px solid #7777;
 		border: none;
 		justify-content: center;
 		align-items: center;

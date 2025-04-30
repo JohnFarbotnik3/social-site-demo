@@ -1,0 +1,6 @@
+FROM nginx:1.26.3-alpine3.20-perl
+COPY ./backend_nginx/sslcert/server.crt		/etc/nginx/cert/www.social-site-demo.com.crt
+COPY ./backend_nginx/sslcert/server.key		/etc/nginx/cert/www.social-site-demo.com.key
+COPY ./backend_nginx/nginx/nginx.conf		/etc/nginx/nginx.conf
+COPY ./backend_nginx/nginx/logrotate		/etc/logrotate.d/nginx
+COPY ./frontend_svelte/build				/usr/share/nginx/html

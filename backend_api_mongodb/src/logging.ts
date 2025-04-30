@@ -227,7 +227,7 @@ docker exec -it "social-site-demo-backend_api-1" sh
 https://forums.docker.com/t/how-to-extract-file-from-image/96987
 https://docs.docker.com/reference/cli/docker/container/cp/
 > copy files from logs directory to host shared memory directory:
-docker cp "social-site-demo-backend_api-1":"/workdir/logs" "/dev/shm/logs"
+docker cp "social-site-demo-backend_api-1":"/workdir/logs" "/dev/shm/logs_$(date +%Y-%m-%d-%H-%M-%S)"
 
 
 > clear log files (while container is running).
@@ -240,6 +240,7 @@ docker volume ls
 docker volume inspect --format '{{ .Mountpoint }}' "social-site-demo_backend_api_logs"
 sudo rm -rf "/var/lib/docker/volumes/social-site-demo_backend_api_logs"
 sudp systemctl restart docker
+
 
 */
 

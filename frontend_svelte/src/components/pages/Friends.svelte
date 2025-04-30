@@ -23,23 +23,31 @@
 			const username	= info.username;
 			const nickname	= info.nickname;
 			const new_chats	= api_cache.has_new_chats(chat_id);
-			const item	= { _id:user_id, user_id, chat_id, username, nickname, new_chats };
+			const new_friend = api_cache.is_new_friend(user_id);
+			const item	= { _id:user_id, friend_id:user_id, chat_id, username, nickname, new_chats, new_friend };
 			friend_items.push(item);
 		}
 	}
 	$effect(() => { refresh_list(); });
 
 	// periodically check for chat-activity notifications.
-	function refresh_new_chats() {
+	// TODO - replace with callbacks or something similar (see "state_chat.svelte.ts" for inspiration)
+	function refresh_new_chats_and_friends() {
 		for(let i=0;i<friend_items.length;i++) {
 			const item = friend_items[i];
-			const newc = api_cache.has_new_chats(item.chat_id)
+			const newc = api_cache.has_new_chats(item.chat_id);
 			if( newc && !item.new_chats) friend_items[i] = {...item, new_chats:newc };
 			if(!newc &&  item.new_chats) friend_items[i] = {...item, new_chats:newc };
 		}
+		for(let i=0;i<friend_items.length;i++) {
+			const item = friend_items[i];
+			const newf = api_cache.is_new_friend(item.friend_id);
+			if( newf && !item.new_friend) friend_items[i] = {...item, new_friend:newf };
+			if(!newf &&  item.new_friend) friend_items[i] = {...item, new_friend:newf };
+		}
 	}
 	onMount(() => {
-		const itv = setInterval(async () => { refresh_new_chats(); }, 500);
+		const itv = setInterval(async () => { refresh_new_chats_and_friends(); }, 500);
 		return () => clearInterval(itv);
 	});
 
@@ -52,16 +60,15 @@
 	// sync friends list on mount.
 	onMount(async function() {
 		console.log("init_flist()");
-		await api_fetch.sync_friendlist();// NOTE: this may not be needed, as sync is also called when logging in.
 		const [add_ids, rem_ids] = api_cache.get_friend_notifs();
-		await api_fetch.notifs_clear_friends_added  (add_ids);
 		await api_fetch.notifs_clear_friends_removed(rem_ids);
 	});
 
 	// show chat.
 	let current_chat_id = $state<StringId|null>(null);
-	async function onclick_chat(event, chat_id) {
+	async function onclick_chat(event, chat_id, friend_id) {
 		current_chat_id = chat_id;
+		await api_fetch.notifs_clear_friends_added([friend_id]);
 	}
 	// go to friend's posts page.
 	function onclick_posts(event, friend_id) {
@@ -83,7 +90,7 @@
 </div>
 <div class="columns">
 	<div class="list_area">
-		{#each filter_items as { _id, chat_id, username, nickname, new_chats }}
+		{#each filter_items as { _id, friend_id, chat_id, username, nickname, new_chats, new_friend }}
 			<!-->
 				a link is used as the chat button, so that it can be tabbed to and activated with keyboard (accessibility).
 				see:
@@ -92,15 +99,24 @@
 			<--->
 			<a
 				href="#"
-				class={"item_user" + (new_chats ? " btn_chat_notif" : "")}
-				onclick={(event) => onclick_chat(event, chat_id)}
+				class={"item_user" + (new_chats ? " btn_chat_notif" : "") + (new_friend ? " btn_friend_notif" : "")}
+				onclick={(event) => onclick_chat(event, chat_id, friend_id)}
 			>
-				<div class="user_info_buttons">
-					<button class="rem_friend" onclick={(event) => onclick_rem (event, _id)}>Remove</button>
-					<button onclick={(event) => onclick_posts(event, _id)}>View Posts</button>
+				<div class="row_0">
+					<div class="nickname">{nickname}</div>
+					<div class="user_info_buttons">
+						<button class="btn_rem_friend" onclick={(event) => onclick_rem (event, _id)}>Remove</button>
+						<button class="btn_view_posts" onclick={(event) => onclick_posts(event, _id)}>View Posts</button>
+					</div>
 				</div>
-				<div class="nickname">{nickname}</div>
-				<div class="username">{username}</div>
+				<div class="row_1">
+					<div class="username">{username}</div>
+					{#if new_friend}
+						<div class="label_new_friend">New friend</div>
+					{:else if new_chats}
+						<div class="label_new_chats">Unread messages</div>
+					{/if}
+				</div>
 			</a>
 		{/each}
 	</div>
@@ -133,10 +149,31 @@
 	.nickname {
 		font-weight: bold;
 	}
+	.username {
+		display: flex;
+	}
+	.label_new_friend, .label_new_chats {
+		color: #008245;
+		flex-grow: 1;
+		text-align: end;
+	}
 	.user_info_buttons {
-		float: right;
+		flex-grow: 1;
+		text-align: end;
 	}
 	.btn_chat_notif {
 		background: #b6ffb4;
+	}
+	.btn_friend_notif {
+		background: #9cf1d1;
+	}
+	.btn_rem_friend, .btn_view_posts {
+		outline: 1px solid var(--outline_clr_soft);
+	}
+	.row_0 {
+		display: flex;
+	}
+	.row_1 {
+		display: flex;
 	}
 </style>

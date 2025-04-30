@@ -6,7 +6,7 @@ import * as api_fetch from "./api_fetch.js";
 import * as api_ws from "./api_ws.js";
 import { test } from "./tables_init_test.js";
 import { init_tables } from "./tables.js";
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { Db, MongoClient, ServerApiVersion } from "mongodb";
 import expressWS from "express-ws";
 import { hostname, port_https, ENDPOINTS } from "backend_api_types/endpoints.js";
 import { emit_logs } from "./logging.js";
@@ -20,8 +20,6 @@ import { try_exit_process } from "./shutdown.js";
 	- creating an SSL certificate:
 		https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-apache-in-ubuntu-16-04
 		> sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout ./sslcert/server.key -out ./sslcert/server.crt
-	- serving static content:
-		https://expressjs.com/en/starter/static-files.html
 	- setting up typescript:
 		https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html
 	- docker:
@@ -104,6 +102,11 @@ async function on_shutdown(err: Error) {
 	}
 }
 
+async function reset_db(db: Db) {
+	await db.dropDatabase();
+	init_tables(db);
+}
+
 async function init_server_https() {
 	const app = express();
 	//const server = https.createServer(credentials, app);
@@ -126,8 +129,7 @@ async function init_server_https() {
 
 	// initialize tables.
 	const db = db_client.db("social_site_demo");
-	await db.dropDatabase();
-	init_tables(db);
+	await reset_db(db);
 
 	// accept websocket connections.
 	app.get(ENDPOINTS.ws_chat	, function(_req, res, _next){ res.end(); });
@@ -155,11 +157,6 @@ async function init_server_https() {
 	app.post(ENDPOINTS.sync_chats		, (req, res) => try_catch_response(req, res, api_fetch.sync_chats	));
 	app.post(ENDPOINTS.sync_flist		, (req, res) => try_catch_response(req, res, api_fetch.sync_flist	));
 	app.post(ENDPOINTS.sync_notifs		, (req, res) => try_catch_response(req, res, api_fetch.sync_notifs	));
-	// serve static files.
-	app.use("/static", express.static("static"));
-	app.use("/static_frontend", express.static("static_frontend"));
-	// redirect from root to static site.
-	app.use("/", (_, res) => { res.redirect("/static_frontend"); });
 	// 404.
 	app.use((req, res) => {
 		console.log("url", req.originalUrl);
@@ -177,7 +174,7 @@ async function init_server_https() {
 	// output initial log (for testing purposes).
 	emit_logs();
 	// periodically emit log files.
-	setInterval(emit_logs, 60*1000);
+	setInterval(emit_logs, 3600 * 1000);
 	// https://stackoverflow.com/questions/43003870/how-do-i-shut-down-my-express-server-gracefully-when-its-process-is-killed
 	// https://nodejs.org/api/http.html#http_server_close_callback
 	process.on('SIGTERM', () => server.close(on_shutdown));
@@ -185,6 +182,9 @@ async function init_server_https() {
 
 	// run initialization test.
 	test();
+
+	// clear and reset db every 24 hours.
+	setInterval(() => reset_db(db).then(() => test()), 24 * 3600 * 1000);
 
 	// TODO: close db connection when shutting down https server.
 }

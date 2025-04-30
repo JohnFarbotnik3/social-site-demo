@@ -29,9 +29,10 @@
 		padding: var(--navbar_btn_padding);
 		text-decoration: unset;
 		color: unset;
-		border-radius: 5px;
-		outline: 1px solid var(--outline_clr_medium);
-		outline-offset: -1px;
+		align-content: center;
+	}
+	a:hover {
+		background: var(--navbar_bg_button_hvr);
 	}
 	.active {
 		background: var(--navbar_bg_button_1);
