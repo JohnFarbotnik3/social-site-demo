@@ -1,5 +1,3 @@
-version: '3.1'
-
 services:
 
   mongo-db-container:
@@ -31,7 +29,7 @@ services:
     stop_grace_period: 5s # SIGKILL after 5s
     init: true
     volumes:
-      - backend_api_logs:/workdir/logs
+      - api_logs:/workdir/logs
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: usr3456
       ME_CONFIG_MONGODB_ADMINPASSWORD: pwd1029380219830129830
@@ -49,20 +47,19 @@ services:
       dockerfile: ./backend_nginx/dockerfile_nginx
     restart: always
     ports:
-      - 8443:8443
+      - 443:8443
       - 5443:5443
     volumes:
       - nginx_logs:/var/log/nginx
-      - nginx_certs:/etc/nginx/cert
+      - nginx_certs:/etc/nginx/certs
     depends_on:
       - backend_api
-
 
 volumes:
   mongo_db_volume:
   mongo_db_config:
   mongo_logs:
-  backend_api_logs:
+  api_logs:
   nginx_logs:
   nginx_certs:
 

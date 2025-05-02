@@ -1,5 +1,5 @@
 
-const base = "https://localhost:8443";
+const base = "https://localhost";
 
 export const ROUTES = {
 	blank_page	: "about:blank",

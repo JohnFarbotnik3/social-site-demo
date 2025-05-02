@@ -116,7 +116,7 @@ async function init_server_https() {
 	// add cors handler for pre-flight requests.
 	// https://expressjs.com/en/resources/middleware/cors.html
 	const corsOptions:CORS.CorsOptions = {
-		origin: ["http://localhost:4173", "http://localhost:5173", "https://localhost:8443", "https://192.168.122.96:8443"],
+		origin: ["http://localhost:4173", "http://localhost:5173", "https://localhost", "https://159.203.17.195"],
 		optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 	};
 	const corsHandler = CORS.default(corsOptions);

@@ -1,17 +1,16 @@
-version: '3.1'
-
 services:
 
   access_container:
     image: alpine@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c
     restart: always
-    ports:
-      - 22:22
+    # https://stackoverflow.com/questions/36249744/interactive-shell-using-docker-compose
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
     volumes:
         - mongo_db_volume:/volumes/mongo_db_volume
         - mongo_db_config:/volumes/mongo_db_config
         - mongo_logs:/volumes/mongo_logs
-        - backend_api_logs:/volumes/backend_api_logs
+        - api_logs:/volumes/api_logs
         - nginx_logs:/volumes/nginx_logs
         - nginx_certs:/volumes/nginx_certs
 
@@ -19,7 +18,7 @@ volumes:
   mongo_db_volume:
   mongo_db_config:
   mongo_logs:
-  backend_api_logs:
+  api_logs:
   nginx_logs:
   nginx_certs:
 
