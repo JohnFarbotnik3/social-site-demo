@@ -24,8 +24,23 @@
 - have table functions return "ResultWithStatus<Value>" instead of just "Value | null",
 	so that logging/error-messages can be more precise, indicating WHY the table operation failed.
 - learn about mongo configs: https://www.mongodb.com/docs/manual/reference/program/mongod/#cmdoption-configsvr
-...
 
+* assets:
+	- add "Assets" page, and allow users to drag-and-drop files into it.
+	- allow users to add reference to asset in group chats,
+	which will have an element in chat that displays it (img, audio, video, txt, etc...)
+* group chats:
+	- add "Group chats" page where user can create new group chats.
+	- each group chat will have a name/title.
+	- allow users to invite other users (by username) into group chat.
+	- allow users to leave group chats.
+* docker images:
+	- instead of shuffling around source-code/build-artifacts, just build the images on my dev machine then push the images to dockerhub.
+	^ for practice, since the code is public on github.
+	^ that way the source code is leaked if someone gains access to the VM.
+
+
+------------------------------------------------------------
 
 
 > [BUGS]
