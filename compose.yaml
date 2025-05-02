@@ -52,7 +52,8 @@ services:
       - 8443:8443
       - 5443:5443
     volumes:
-      - backend_nginx:/var/log/nginx
+      - nginx_logs:/var/log/nginx
+      - nginx_certs:/etc/nginx/cert
     depends_on:
       - backend_api
 
@@ -62,5 +63,6 @@ volumes:
   mongo_db_config:
   mongo_logs:
   backend_api_logs:
-  backend_nginx:
+  nginx_logs:
+  nginx_certs:
 

@@ -1,5 +1,14 @@
 
 > [GENERAL] code improvements:
+- put sslcerts in a docker volume.
+- create a 2nd docker-compose file with a blank alpine image with all volumes mounted for easier volume manipulation.
+- get API to accept traffic from "159.203.17.195" origin.
+* ip:
+	159.203.17.195:8443
+	[2604:a880:cad:d0::b846:3001]:8443
+- troubleshoot ipv6 connection issues.
+- https://wiki.alpinelinux.org/wiki/Setting_up_a_SSH_server
+
 - add toggle under group-chat "Send" button - "send on ENTER".
 - add DB indices.
 - add some component to display notification list.
