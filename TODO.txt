@@ -1,10 +1,15 @@
 
 > [GENERAL] code improvements:
-- put sslcerts in a docker volume.
+
+* docker images:
+	- instead of shuffling around source-code/build-artifacts, just build the images on my dev machine then push the images to dockerhub.
+	^ for practice, since the code is public on github.
+	^ that way the source code is leaked if someone gains access to the VM.
+
 - get API to accept traffic from "159.203.17.195" origin.
 * ip:
-	159.203.17.195:8443
-	[2604:a880:cad:d0::b846:3001]:8443
+	https://159.203.17.195
+	https://2604:a880:cad:d0::b846:3001
 - troubleshoot ipv6 connection issues.
 
 - add toggle under group-chat "Send" button - "send on ENTER".
@@ -34,10 +39,6 @@
 	- each group chat will have a name/title.
 	- allow users to invite other users (by username) into group chat.
 	- allow users to leave group chats.
-* docker images:
-	- instead of shuffling around source-code/build-artifacts, just build the images on my dev machine then push the images to dockerhub.
-	^ for practice, since the code is public on github.
-	^ that way the source code is leaked if someone gains access to the VM.
 
 
 ------------------------------------------------------------
