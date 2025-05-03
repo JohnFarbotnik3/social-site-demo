@@ -8,7 +8,7 @@ import { test } from "./tables_init_test.js";
 import { init_tables } from "./tables.js";
 import { Db, MongoClient, ServerApiVersion } from "mongodb";
 import expressWS from "express-ws";
-import { hostname, port_https, ENDPOINTS } from "backend_api_types/endpoints.js";
+import { ENDPOINTS } from "backend_api_types/endpoints.js";
 import { emit_logs } from "./logging.js";
 import { try_exit_process } from "./shutdown.js";
 
@@ -81,6 +81,7 @@ export async function db_close() {
 //const privateKey  = fs.readFileSync('sslcert/server.key', 'utf8');
 //const certificate = fs.readFileSync('sslcert/server.crt', 'utf8');
 //const credentials = {key: privateKey, cert: certificate};
+const port_https = 443;
 
 function try_catch_response(req:Request, res:Response, func:Function) {
 	func(req, res).catch((error: Error) => {
@@ -116,7 +117,13 @@ async function init_server_https() {
 	// add cors handler for pre-flight requests.
 	// https://expressjs.com/en/resources/middleware/cors.html
 	const corsOptions:CORS.CorsOptions = {
-		origin: ["http://localhost:4173", "http://localhost:5173", "https://localhost", "https://159.203.17.195"],
+		origin: [
+			"http://localhost:4173",
+			"http://localhost:5173",
+			"https://localhost",
+			"https://159.203.17.195",
+			"https://2604:a880:cad:d0::b846:3001",
+		],
 		optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 	};
 	const corsHandler = CORS.default(corsOptions);
@@ -169,7 +176,7 @@ async function init_server_https() {
 
 	await db_run();
 
-	server.listen(port_https, () => { console.log(`HTTPS: Listening on https://${hostname}:${port_https}`); });
+	server.listen(port_https, () => { console.log(`HTTPS: Listening on port ${port_https}`); });
 
 	// output initial log (for testing purposes).
 	emit_logs();

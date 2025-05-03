@@ -1,4 +1,5 @@
-import { ENDPOINTS, hostname, port_https } from "backend_api_types/endpoints";
+import { ENDPOINTS } from "backend_api_types/endpoints";
+import { path_ws } from "./api_config";
 import { cache, is_logged_in } from "./api_cache.svelte";
 import * as api_fetch from "./api_fetch";
 import type { Friend, StringId } from "backend_api_types/types";
@@ -7,7 +8,7 @@ import { state_chat } from "./state_chat.svelte";
 import { getDeferredPromise, type DeferredPromise } from "backend_api_types/DeferredPromise";
 
 function get_websocket(path:string) {
-	const url = `wss://${hostname}:${port_https}${path}`;
+	const url = `wss://${path_ws}${path}`;
 	return new WebSocket(url);
 }
 

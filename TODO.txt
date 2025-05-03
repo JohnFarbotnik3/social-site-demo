@@ -1,17 +1,6 @@
 
 > [GENERAL] code improvements:
-
-* docker images:
-	- instead of shuffling around source-code/build-artifacts, just build the images on my dev machine then push the images to dockerhub.
-	^ for practice, since the code is public on github.
-	^ that way the source code is leaked if someone gains access to the VM.
-
-- get API to accept traffic from "159.203.17.195" origin.
-* ip:
-	https://159.203.17.195
-	https://2604:a880:cad:d0::b846:3001
-- troubleshoot ipv6 connection issues.
-
+- troubleshoot ipv6 connection issues with deployment.
 - add toggle under group-chat "Send" button - "send on ENTER".
 - add DB indices.
 - add some component to display notification list.

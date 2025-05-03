@@ -1,5 +1,6 @@
 import { goto } from "$app/navigation";
-import { ENDPOINTS, hostname, port_https } from "backend_api_types/endpoints";
+import { ENDPOINTS } from "backend_api_types/endpoints";
+import { path_fetch } from "./api_config";
 import * as types from "backend_api_types/types.js";
 import { NONE_TIMESTAMP } from "backend_api_types/types";
 import type { StringId } from "backend_api_types/types";
@@ -9,8 +10,8 @@ import * as api_ws from "./api_ws";
 import { ROUTES } from "./routes";
 
 async function api_fetch<RequestT, ResponseT>(path:string, request_body:RequestT): Promise<ResponseT> {
-	const url = `https://${hostname}:${port_https}${path}`;
-	console.log("request url", url);
+	const url = `https://${path_fetch}${path}`;
+	//console.log("request url", url);
 	const req = {
 		method:"post",
 		headers: {

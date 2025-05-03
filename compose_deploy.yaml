@@ -1,0 +1,61 @@
+services:
+
+  mongo-db-container:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    command: ['--logpath', '/var/log/mongodb/mongod.log']
+    volumes:
+        - mongo_db_volume:/data/db
+        - mongo_db_config:/data/configdb
+        - mongo_logs:/var/log/mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: usr3456
+      MONGO_INITDB_ROOT_PASSWORD: pwd1029380219830129830
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10m
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+      start_interval: 2s
+
+  backend_api:
+    image: johnfarbotnik3/private:ssdemo_api
+    restart: always
+    stop_grace_period: 5s # SIGKILL after 5s
+    init: true
+    volumes:
+      - api_logs:/workdir/logs
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: usr3456
+      ME_CONFIG_MONGODB_ADMINPASSWORD: pwd1029380219830129830
+      ME_CONFIG_MONGODB_URL: mongodb://usr3456:pwd1029380219830129830@mongo-db-container:27017
+      ME_CONFIG_BASICAUTH: false
+      DIR_API_LOGS: /workdir/logs
+    depends_on:
+      mongo-db-container:
+        condition: service_healthy
+        restart: true
+
+  backend_nginx:
+    image: johnfarbotnik3/private:ssdemo_nginx
+    restart: always
+    ports:
+      - 443:8443
+      - 5443:5443
+    volumes:
+      - nginx_logs:/var/log/nginx
+      - nginx_certs:/etc/nginx/certs
+    depends_on:
+      - backend_api
+
+volumes:
+  mongo_db_volume:
+  mongo_db_config:
+  mongo_logs:
+  api_logs:
+  nginx_logs:
+  nginx_certs:
+
