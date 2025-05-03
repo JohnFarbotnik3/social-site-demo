@@ -1,19 +1,31 @@
 {
-  "name": "social-site-demo",
-  "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "John Farbotnik",
-  "scripts": {
-    "build_nginx"	: "docker rmi -f social-site-demo-backend_nginx && cd ./frontend_svelte && npm run build && cd ..",
-	"build_api"		: "docker rmi -f social-site-demo-backend_api   && cd ./backend_api_mongodb && npm run build && cd ..",
-	"access-up"		: "docker compose -f compose_access.yaml up --detach && docker exec -it 'social-site-demo-access_container-1' sh",
-	"access-down"	: "docker compose -f compose_access.yaml down",
-	"import_certs"	: "docker cp ./backend_nginx/certs social-site-demo-backend_nginx-1:/etc/nginx",
-	"export_certs"	: "docker cp social-site-demo-backend_nginx-1:/etc/nginx/certs /dev/shm",
-	"logs_mongo"	: "./scripts/export_logs_mongo.sh",
-	"logs_nginx"	: "./scripts/export_logs_nginx.sh",
-	"logs_api"		: "./scripts/export_logs_api.sh",
-	"test"			: "cd ./frontend_svelte && npx playwright test --ui && cd .."
-  }
+	"name": "frontend-ts",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"link": "npm link backend_api_types",
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test:e2e": "playwright test",
+		"test": "npm run test:e2e",
+		"test_ui": "npx playwright test --ui",
+		"simtest": "export NODE_TLS_REJECT_UNAUTHORIZED='0' && tsc -noEmit --project tsconfig_simtest.json && node ./esbuild_simtest.mjs && node ./bundle/simtest.cjs"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.49.1",
+		"@sveltejs/adapter-static": "^3.0.8",
+		"@sveltejs/kit": "^2.16.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"@types/node": "^22.15.0",
+		"esbuild": "0.25.1",
+		"svelte": "^5.0.0",
+		"svelte-check": "^4.0.0",
+		"typescript": "^5.0.0",
+		"vite": "^6.0.0"
+	}
 }

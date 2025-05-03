@@ -64,6 +64,12 @@ export enum ERR_TYPE {
 	WS_ALREADY_LOGGED_IN,
 };
 
+
+const enum_entries_log = [...Object.entries(LOG_TYPE)].filter(([k,_v]) => Number(k) >= 0).map(([k,v]) => [Number(k), v]) as [number, string][];
+const enum_entries_err = [...Object.entries(ERR_TYPE)].filter(([k,_v]) => Number(k) >= 0).map(([k,v]) => [Number(k), v]) as [number, string][];
+const map_entries_log = new Map(enum_entries_log);
+const map_entries_err = new Map(enum_entries_err);
+
 export type LogEntry = {
 	/** which function was called. */
 	log_type: LOG_TYPE;
@@ -85,36 +91,6 @@ export type LogEntry = {
 
 let log_entries	: LogEntry[] = [];
 
-export function push_log_entry(req: Request, log_type: LOG_TYPE, t0: number, err_type: ERR_TYPE) {
-	const log: LogEntry = {
-		log_type: log_type,
-		err_type: err_type,
-		ip		: req.ip,
-		user_id	: null,
-		date	: Date.now(),
-		dt		: Math.round((performance.now() - t0) * 1000000),
-		// NOTE: for some reason getting request length from express is non-trivial.
-		// (and adding middleware would make performance even worse; whereas in C++ thats less of a problem.)
-		// https://stackoverflow.com/questions/32295689/how-to-get-byte-size-of-request
-		sz_req	: 0,
-		sz_res	: 0,
-	};
-	log_entries.push(log);
-}
-
-export function push_log_entry_ws(socket:Socket_api, log_type: LOG_TYPE, t0: number, err_type: ERR_TYPE) {
-	const log: LogEntry = {
-		log_type: log_type,
-		err_type: err_type,
-		ip		: socket.ip,
-		user_id	: null,
-		date	: Date.now(),
-		dt		: Math.round((performance.now() - t0) * 1000000),
-		sz_req	: 0,
-		sz_res	: 0,
-	};
-	log_entries.push(log);
-}
 
 async function write_file(path: string, data: string | NodeJS.ArrayBufferView) {
 	return new Promise((resolve, _reject) => {
@@ -131,25 +107,78 @@ async function write_file(path: string, data: string | NodeJS.ArrayBufferView) {
 	});
 }
 
-export async function emit_logs() {
-	const fdir = process.env["DIR_API_LOGS"] ?? "./logs";
-	const date_str = new Date().toISOString();
-	// get enum entries.
-	const enum_entries_log = [...Object.entries(LOG_TYPE)].filter(([k,_v]) => Number(k) >= 0).map(([k,v]) => [Number(k), v]) as [number, string][];
-	const enum_entries_err = [...Object.entries(ERR_TYPE)].filter(([k,_v]) => Number(k) >= 0).map(([k,v]) => [Number(k), v]) as [number, string][];
-	// traffic - requests and responses.
-	{
-		// get log data.
-		const log = {
-			log_types	: enum_entries_log,
-			err_types	: enum_entries_err,
-			entries		: log_entries,
-		};
-		// write log file.
-		const path = `${fdir}/api_log_traffic_${date_str}.txt`;
-		const data = JSON.stringify(log);
-		await write_file(path, data);
+function get_log_dir() {
+	return process.env["DIR_API_LOGS"] ?? "./logs";
+}
+
+let enum_log_written: boolean = false;
+let traffic_log_period: number = 24 * 3600 * 1000;// start new log every 24h.
+let traffic_log_date: number = 0;
+let traffic_log_path: string = null;
+export function append_to_traffic_log(log: LogEntry) {
+	if(!traffic_log_date || (traffic_log_date + traffic_log_period < Date.now())) {
+		// get new log path.
+		const date = new Date();
+		const fdir = get_log_dir();
+		const dstr = date.toISOString();
+		traffic_log_date = date.valueOf();
+		traffic_log_path = `${fdir}/api_log_traffic_${dstr}.txt`;
+		// write enums to a log for cross-referencing with traffic logs.
+		if(!enum_log_written) {
+			enum_log_written = true;
+			const enum_log_path = `${fdir}/api_log_enums_${dstr}.txt`;
+			const enumstr = JSON.stringify({
+				log_types	: enum_entries_log,
+				err_types	: enum_entries_err,
+			});
+			write_file(enum_log_path, enumstr);
+		}
 	}
+	const data = JSON.stringify({
+		...log,
+		err_type: map_entries_err.get(log.err_type),
+		log_type: map_entries_log.get(log.log_type),
+	}) + "\n";
+	fs.appendFileSync(traffic_log_path, data);
+}
+
+export function push_log_entry(req: Request, log_type: LOG_TYPE, t0: number, err_type: ERR_TYPE) {
+	const log: LogEntry = {
+		log_type: log_type,
+		err_type: err_type,
+		ip		: req.ip,
+		user_id	: null,
+		date	: Date.now(),
+		dt		: Math.round((performance.now() - t0) * 1000000),
+		// NOTE: for some reason getting request length from express is non-trivial.
+		// (and adding middleware would make performance even worse; whereas in C++ thats less of a problem.)
+		// https://stackoverflow.com/questions/32295689/how-to-get-byte-size-of-request
+		sz_req	: 0,
+		sz_res	: 0,
+	};
+	log_entries.push(log);
+	append_to_traffic_log(log);
+}
+
+export function push_log_entry_ws(socket:Socket_api, log_type: LOG_TYPE, t0: number, err_type: ERR_TYPE) {
+	const log: LogEntry = {
+		log_type: log_type,
+		err_type: err_type,
+		ip		: socket.ip,
+		user_id	: null,
+		date	: Date.now(),
+		dt		: Math.round((performance.now() - t0) * 1000000),
+		sz_req	: 0,
+		sz_res	: 0,
+	};
+	log_entries.push(log);
+	append_to_traffic_log(log);
+}
+
+// extra logs with performance & leaderboard info.
+export async function emit_logs() {
+	const fdir = get_log_dir();
+	const date_str = new Date().toISOString();
 	// performance - time taken per function.
 	{
 		// name, N, dt (min, max, avg, median, cumulative).
