@@ -1,65 +1,64 @@
+# https://docs.docker.com/compose/how-tos/project-name/
+# https://docs.docker.com/reference/compose-file/version-and-name/
+name: social-site
+
 services:
 
-  mongo-db-container:
-    image: mongo
-    restart: always
-    ports:
-      - 27017:27017
-    command: ['--logpath', '/var/log/mongodb/mongod.log']
-    volumes:
-        - mongo_db_volume:/data/db
-        - mongo_db_config:/data/configdb
-        - mongo_logs:/var/log/mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: usr3456
-      MONGO_INITDB_ROOT_PASSWORD: pwd1029380219830129830
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10m
-      timeout: 10s
-      retries: 5
-      start_period: 10s
-      start_interval: 2s
+    social-site_db:
+        image: mongo
+        restart: always
+        command: ['--logpath', '/var/log/mongodb/mongod.log']
+        volumes:
+            - db_data:/data/db
+            - db_logs:/var/log/mongodb
+            - db_config:/data/configdb
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: usr3456
+            MONGO_INITDB_ROOT_PASSWORD: pwd1029380219830129830
+        healthcheck:
+            test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+            interval: 10m
+            timeout: 10s
+            retries: 5
+            start_period: 10s
+            start_interval: 2s
 
-  backend_api:
-    build:
-      context: .
-      dockerfile: ./backend_api_mongodb/dockerfile_api
-    restart: always
-    stop_grace_period: 5s # SIGKILL after 5s
-    init: true
-    volumes:
-      - api_logs:/workdir/logs
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: usr3456
-      ME_CONFIG_MONGODB_ADMINPASSWORD: pwd1029380219830129830
-      ME_CONFIG_MONGODB_URL: mongodb://usr3456:pwd1029380219830129830@mongo-db-container:27017
-      ME_CONFIG_BASICAUTH: false
-      DIR_API_LOGS: /workdir/logs
-    depends_on:
-      mongo-db-container:
-        condition: service_healthy
-        restart: true
+    social-site_api:
+        image: node@sha256:9bef0ef1e268f60627da9ba7d7605e8831d5b56ad07487d24d1aa386336d1944
+        restart: always
+        stop_grace_period: 5s # SIGKILL after 5s
+        init: true
+        volumes:
+            - ./social-site_api/bundle:/workdir/bundle
+            - ./logs/api:/workdir/logs
+        command: ["node", "./workdir/bundle/index.cjs"]
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: usr3456
+            ME_CONFIG_MONGODB_ADMINPASSWORD: pwd1029380219830129830
+            ME_CONFIG_MONGODB_URL: mongodb://usr3456:pwd1029380219830129830@social-site_db:27017
+            ME_CONFIG_BASICAUTH: false
+            DIR_API_LOGS: /workdir/logs
+        depends_on:
+            social-site_db:
+                condition: service_healthy
+                restart: true
 
-  backend_nginx:
-    build:
-      context: .
-      dockerfile: ./backend_nginx/dockerfile_nginx
-    restart: always
-    ports:
-      - 443:8443
-      - 5443:5443
-    volumes:
-      - nginx_logs:/var/log/nginx
-      - nginx_certs:/etc/nginx/certs
-    depends_on:
-      - backend_api
+    nginx:
+        image: nginx:1.26.3-alpine3.20-perl
+        restart: always
+        ports:
+            - 10443:443
+        volumes:
+            - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./nginx/config/logrotate:/etc/logrotate.d/nginx:ro
+            - ./nginx/certs:/etc/nginx/certs:ro
+            - ./logs/nginx:/var/log/nginx:rw
+            - ./social-site_frontend/build:/usr/share/nginx/html:ro
+        depends_on:
+            - social-site_api
 
 volumes:
-  mongo_db_volume:
-  mongo_db_config:
-  mongo_logs:
-  api_logs:
-  nginx_logs:
-  nginx_certs:
-
+    db_data:
+    db_logs:
+    db_config:
+    nginx_html:
