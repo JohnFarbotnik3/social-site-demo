@@ -1,5 +1,6 @@
 
 > [GENERAL] code improvements:
+* create a site-thumbnail.
 - [bug] when refreshing friends page, "New friend" labels are removed (sync friends during autologin might be the culprit)
 - troubleshoot ipv6 connection issues with deployment.
 - add toggle under group-chat "Send" button - "send on ENTER".
